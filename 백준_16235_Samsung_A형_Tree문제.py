@@ -1,28 +1,26 @@
 # %%
-import numpy as np
+#import numpy as np
 
 
-def Spring(Tree_Map, Power, Dead_Tree):
+def Spring_Summer(Tree_Map, Power):
     for i in range(len(Tree_Map)):
         for j in range(len(Tree_Map)):
             Age_Sum = sum(Tree_Map[i][j])
             Tree_Map[i][j] = sorted(Tree_Map[i][j])
+            Dead_Tree = []
             for k in reversed(range(len(Tree_Map[i][j]))):
                 if Age_Sum > Power[i][j]:
                     Age_Sum = Age_Sum - Tree_Map[i][j][k]
-                    Dead_Tree.append({'x': i,'y':j,'Value':Tree_Map[i][j][k]})
+                    Dead_Tree.append(Tree_Map[i][j][k])
                     del Tree_Map[i][j][k]
                 if Age_Sum<0:
                     Age_Sum = 0
             Tree_Map[i][j] = list(map(lambda x: x+1, Tree_Map[i][j]))
             Power[i][j] = Power[i][j] - Age_Sum
+            for k in range(len(Dead_Tree)):
+                Power[i][j] = Power[i][j] + (Dead_Tree[k] // 2)
 
-def Summer(Tree_Map, Power, Dead_Tree):
-    for i in range(len(Dead_Tree)):
-        Power[Dead_Tree[i]['x'], Dead_Tree[i]['y']] = Power[Dead_Tree[i]['x'], Dead_Tree[i]['y']] + (Dead_Tree[i]['Value'] // 2)
-    Dead_Tree = []
-
-def Fall(Tree_Map):
+def Fall_Winter(Tree_Map, Power, A):
     for i in range(len(Tree_Map)):
         for j in range(len(Tree_Map)):
             Count_5_Age = 0
@@ -41,7 +39,7 @@ def Fall(Tree_Map):
                                 Tree_Map[x][y].append(1)
                         y = y+1
                     x = x+1
-
+            Power[i][j] = Power[i][j] + A[i][j]
                 # if i>0:
                 #     Tree_Map[i-1][j][k].append(1)
                 # if j>0:
@@ -49,17 +47,12 @@ def Fall(Tree_Map):
                 # if i< len(Tree_Map)-1:
                 #     Tree_Map[i][j-1][k].append(1)
                 # if j< len(Tree_Map)
-
-
-def Winter(Power, A):
-    Power = Power + A
-    return Power
 #input #1
 N, M, K = map(int, input().split())
 
 Tree_Map = [[[]for col in range(N)] for row in range(N)]
-Power = np.full((N,N),5)
-A = np.zeros((N,N))
+Power = [[5 for _ in range(N)] for _ in range(N)]
+A = [[0 for _ in range(N)] for _ in range(N)]
 
 #input #2
 for i in range(N):
@@ -75,10 +68,9 @@ for i in range(M):
 #Calculate
 Dead_Tree = []
 for i in range(K):
-    Spring(Tree_Map, Power, Dead_Tree)
-    Summer(Tree_Map, Power, Dead_Tree)
-    Fall(Tree_Map)
-    Power = Winter(Power, A)
+    Spring_Summer(Tree_Map, Power)
+    Fall_Winter(Tree_Map, Power, A)
+#    Power = Winter(Power, A)
     test = 'test'
     #print(Tree_Map)
 
@@ -86,7 +78,10 @@ result_ = 0
 for Tree_Map_row in Tree_Map:
     for Tree_Map_idx in Tree_Map_row:
         result_ = result_ + len(Tree_Map_idx)
+print(result_)
 
+
+#=========TEST===================
 # %%
 a = print(input())
 
