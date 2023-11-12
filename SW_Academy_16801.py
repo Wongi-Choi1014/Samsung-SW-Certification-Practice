@@ -17,7 +17,7 @@ for test_case in range(1, T + 1):
     Score = [A[i]* F[i] for i in range(N)]
 
     i = 0
-    left = min(Score)
+    left = 0
     right = max(Score)
     mid = (left + right) //2
 
@@ -33,13 +33,12 @@ for test_case in range(1, T + 1):
                     screen_value = (Score[idx] - mid) // F[idx]
                 screen += screen_value
                 screen_idx.append((idx,screen_value))
+
         if screen +i > K:
             left = mid
             mid = (left + right) //2
             if mid == left:
                 for idx,value in screen_idx:
-                    if i == K:
-                        break
 
                     v = value
                     while(v):
@@ -49,13 +48,16 @@ for test_case in range(1, T + 1):
                             Score[idx] = A[idx] * F[idx]
                             break
                         v -=1
+                    if i == K:
+                        break
         else:
             #right = mid
             i += screen
             for idx,value in screen_idx:
                 A[idx] -= value
                 Score[idx] = A[idx] * F[idx]
-            left = min(Score)
+
+            left = 0
             right = max(Score)
             mid = (left + right) //2
             if right ==0:
