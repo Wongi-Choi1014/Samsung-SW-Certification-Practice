@@ -29,9 +29,10 @@ for test_case in range(1, T + 1):
         for idx in range(N):
             if Score[idx] >= mid:
                 screen_value = (Score[idx] - mid) // F[idx] + 1
+                if mid==0:
+                    screen_value = (Score[idx] - mid) // F[idx]
                 screen += screen_value
                 screen_idx.append((idx,screen_value))
-
         if screen +i > K:
             left = mid
             mid = (left + right) //2
