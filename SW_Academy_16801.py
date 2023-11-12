@@ -14,55 +14,54 @@ for test_case in range(1, T + 1):
     A = sorted([int(i) for i in input().split()])
     F = sorted([int(i) for i in input().split()], reverse=True)
 
-    Score = PriorityQueue()
-    for i in range(N):
-        Score.put([A[i]* F[i]*(-1), i , {'A': A[i], 'F': F[i]}]) 
+    Score = [A[i]* F[i] for i in range(N)]
+
     i = 0
+    left = min(Score)
+    right = max(Score)
+    mid = (left + right) //2
+
     while i < K:
-        Max = Score.get()
-        Max_Second = Score.get()
-        Train = (Max[0] - Max_Second[0])*(-1) // Max[2]['F'] + 1
-        Train = 1
-        if Train < 1:
-            Train = 1
-        if Train > K-i:
-            Train = K-i
-             
-        Max[2]['A'] = Max[2]['A'] - Train
-        Max[0] = Max[2]['A'] * Max[2]['F'] *(-1)
-        i = i + Train
+        screen = 0
+        screen_idx = []
 
-        if Max_Second[0]*(-1) >= Max[0] *(-1):
-            Train = (Max_Second[0] - Max[0])*(-1) // Max_Second[2]['F'] + 1
-            Train = 1
-            if Train < 1:
-                Train = 1
-            if Train > K-i:
-                Train = K-i
-            Max_Second[2]['A'] = Max_Second[2]['A'] - Train
-            Max_Second[0] = Max_Second[2]['A'] * Max_Second[2]['F'] *(-1)
-            i = i + Train
-        Score.put(Max_Second)
 
-        for _ in range(Score.qsize()):
-            Target = Score.get()
-            if Target[0]*(-1) >= Max[0] *(-1):
-                Train = (Target[0] - Max[0])*(-1) // Target[2]['F'] + 1
-                Train = 1
-                if Train < 1:
-                    Train = 1
-                if Train > K-i:
-                    Train = K-i
-                Target[2]['A'] = Target[2]['A'] - Train
-                Target[0] = Target[2]['A'] * Target[2]['F'] *(-1)
-                i = i + Train
-            Score.put(Target)
+        for idx in range(N):
+            if Score[idx] >= mid:
+                screen_value = (Score[idx] - mid) // F[idx] + 1
+                screen += screen_value
+                screen_idx.append((idx,screen_value))
+
+        if screen +i > K:
+            left = mid
+            mid = (left + right) //2
+            if mid == left:
+                for idx,value in screen_idx:
+                    if i == K:
+                        break
+
+                    v = value
+                    while(v):
+                        if v +i <= K:
+                            i += v
+                            A[idx] -= v
+                            Score[idx] = A[idx] * F[idx]
+                            break
+                        v -=1
+        else:
+            #right = mid
+            i += screen
+            for idx,value in screen_idx:
+                A[idx] -= value
+                Score[idx] = A[idx] * F[idx]
+            left = min(Score)
+            right = max(Score)
+            mid = (left + right) //2
+            #if right ==0:
+            #    break
 
         
-        #Score.put(Max_Second)
-        Score.put(Max)
-        
-    print(f"#{test_case} {Score.get()[0]*(-1)}")
+    print(f"#{test_case} {max(Score)}")
 
 # %%
 
@@ -97,10 +96,10 @@ for test_case in range(1, T + 1):
         
 #     print(f"#{test_case} {max(Score)}")
 # %%
-from queue import PriorityQueue
-S = PriorityQueue()
-S.put(1)
-S.put(2)
-S.put(3)
-print(S.get())
-# %%
+# from queue import PriorityQueue
+# S = PriorityQueue()
+# S.put(1)
+# S.put(2)
+# S.put(3)
+# print(S.get())
+# # %%
