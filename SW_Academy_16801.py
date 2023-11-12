@@ -28,6 +28,8 @@ for test_case in range(1, T + 1):
 
         for idx in range(N):
             if Score[idx] >= mid:
+                if mid+1 == right and Score[idx] == mid:
+                    continue
                 screen_value = (Score[idx] - mid) // F[idx] + 1
                 if mid==0:
                     screen_value = (Score[idx] - mid) // F[idx]
