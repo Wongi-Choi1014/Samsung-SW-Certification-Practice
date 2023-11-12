@@ -57,11 +57,11 @@ for test_case in range(1, T + 1):
             left = min(Score)
             right = max(Score)
             mid = (left + right) //2
-            #if right ==0:
-            #    break
+            if right ==0:
+                break
 
         
-    print(f"#{test_case} {max(Score)}")
+    print(f"#{test_case} {right}")
 
 # %%
 
