@@ -1,5 +1,21 @@
 {
     "files.associations": {
-        "iostream": "cpp"
-    }
+        "iostream": "cpp",
+        "vector": "cpp",
+        "algorithm": "cpp",
+        "xutility": "cpp",
+        "iterator": "cpp",
+        "format": "cpp",
+        "initializer_list": "cpp",
+        "xstring": "cpp",
+        "cstdlib": "cpp",
+        "ostream": "cpp",
+        "exception": "cpp",
+        "memory": "cpp",
+        "tuple": "cpp",
+        "utility": "cpp",
+        "xmemory": "cpp",
+        "deque": "cpp"
+    },
+    "C_Cpp.default.compilerPath": "cl.exe"
 }

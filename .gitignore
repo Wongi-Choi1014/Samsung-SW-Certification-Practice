@@ -4,3 +4,7 @@ PRO/cpp_STL_modern_cpp.obj
 PRO/cpp_STL_modern_cpp.pdb
 PRO/vc140.pdb
 .vs/
+PRO/*.exe
+PRO/*.ilk
+PRO/*.obj
+PRO/*.pdb
