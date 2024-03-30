@@ -8,3 +8,7 @@ PRO/*.exe
 PRO/*.ilk
 PRO/*.obj
 PRO/*.pdb
+*.exe
+*.ilk
+*.obj
+*.pdb
