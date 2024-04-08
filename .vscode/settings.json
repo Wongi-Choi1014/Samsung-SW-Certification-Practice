@@ -58,7 +58,9 @@
         "xlocmon": "cpp",
         "xlocnum": "cpp",
         "xloctime": "cpp",
-        "xtr1common": "cpp"
+        "xtr1common": "cpp",
+        "set": "cpp",
+        "xtree": "cpp"
     },
     "C_Cpp.default.compilerPath": "cl.exe"
 }

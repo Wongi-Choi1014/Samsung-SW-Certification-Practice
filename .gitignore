@@ -12,3 +12,4 @@ PRO/*.pdb
 *.ilk
 *.obj
 *.pdb
+PRO/STL/input.txt
