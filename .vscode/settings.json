@@ -60,7 +60,10 @@
         "xloctime": "cpp",
         "xtr1common": "cpp",
         "set": "cpp",
-        "xtree": "cpp"
+        "xtree": "cpp",
+        "xhash": "cpp",
+        "map": "cpp",
+        "unordered_map": "cpp"
     },
     "C_Cpp.default.compilerPath": "cl.exe"
 }
