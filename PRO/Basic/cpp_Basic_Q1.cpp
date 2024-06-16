@@ -7,7 +7,8 @@ using namespace std;
 
 int main(){
     freopen("input.txt", "r", stdin);
-    
+    ios::sync_with_stdio(0);
+    cin.tie(0);
     long long TC, calculate,tmp;
     long long result[3]; 
     result[2] = 2000000000;
@@ -100,7 +101,7 @@ int main(){
         result[1] = *(table.end()-1);
         result[2] = *(table.end()-2)+*(table.end()-1);
     }
-    cout<<result[0]<<' '<<result[1]<<endl;
+    cout<<result[0]<<' '<<result[1]<<'\n';
     //Test
     //cout<<result[2]<<endl;
     return 0;
