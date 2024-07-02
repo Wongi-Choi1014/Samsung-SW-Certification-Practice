@@ -13,3 +13,4 @@ PRO/*.pdb
 *.obj
 *.pdb
 PRO/STL/input.txt
+PRO/Basic/input_Q9.txt
