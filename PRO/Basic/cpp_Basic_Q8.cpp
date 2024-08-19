@@ -1,11 +1,13 @@
 #include <iostream>
 #include <algorithm>
+#include <vector>
 
 using namespace std;
 
 int Page[100000];
 long long Page_Sum[100000];
-int result[100000]; 
+vector<int> result;
+
 int main()
 {
 #ifdef _WIN32
@@ -25,27 +27,36 @@ int main()
         else
             Page_Sum[i]=Page_Sum[i-1]+Page[i];
     }
-    int left,right,mid,target;
-    left=0;
-    for(int i=0;i<K-1;i++)
+    int left,right,mid;
+    left = 0;
+    right= Page_Sum[N - 1];
+    //mid = (left+right)/2;
+    mid = Page_Sum[N-1]/K;
+    int cnt=0;
+    
+    while (left <= right)
     {
-        right=N-1;
-        mid = (left+right)/2;
-        target = Page_Sum[N-1]/K*(i+1);
-        while(left<=right)
-        {
-            if(target==Page_Sum[mid])
-                right=mid;
-            if(target<Page_Sum[mid])
-                right=mid-1;
-            else
-                left=mid+1;
-            mid = (left+right)/2;
-        }
-        result[i]=right;
-        left=right+1;
-    }
+        
+        mid = (left + right) / 2;
 
+        //result[i] = right;
+        left = right + 1;
+        vector<int> validation;
+        validation.push_back(N-1);
+        for(int i=N-1;i>0;i++)
+        {
+            
+        }
+        if(cnt==K)
+            result=validation;
+        else
+            cnt=0;
+        if (K < cnt)
+            left = mid + 1;
+        else
+            right = mid - 1;
+        mid = (left + right) / 2;
+    }
     result[K-1]=N-1;
     
     int s=0;
