@@ -4,9 +4,9 @@
 
 using namespace std;
 
-int Page[100000];
-long long Page_Sum[100000];
-vector<int> result;
+long long Page[100105];
+long long Page_Sum[100105];
+vector<long long> result;
 
 int main()
 {
@@ -16,61 +16,84 @@ int main()
     ios::sync_with_stdio(0);
     cin.tie(0);
     cout.tie(0);
-    int N,K;
+    long long N,K;
     cin>>N>>K;
-
-    for(int i=0;i<N;i++)
+    long long left_min;
+    Page_Sum[0]=0;
+    for(long long i=0;i<N;i++)
     {
         cin>>Page[i];
         if(i==0)
-            Page_Sum[i]=Page[i];
+        {
+            left_min =Page[i];
+            Page_Sum[i+1]=Page[i];
+        }
         else
-            Page_Sum[i]=Page_Sum[i-1]+Page[i];
+            Page_Sum[i+1]=Page_Sum[i]+Page[i];
+        if(left_min>Page[i])
+            left_min=Page[i];
     }
-    int left,right,mid;
-    left = 0;
-    right= Page_Sum[N - 1];
-    //mid = (left+right)/2;
-    mid = Page_Sum[N-1]/K;
-    int cnt=0;
+    long long left,right,mid;
+    left = left_min;
+    right= Page_Sum[N];
+    mid = (left+right)/2;
+    //mid = Page_Sum[N] / K;
+    long long split_count = 0;
     
     while (left <= right)
     {
-        
-        mid = (left + right) / 2;
-
-        //result[i] = right;
-        left = right + 1;
-        vector<int> validation;
-        validation.push_back(N-1);
-        for(int i=N-1;i>0;i++)
+        vector<long long> validation;
+        split_count = 1;
+        long long compare_idx = N;
+        for(long long i=N-2;i>=0;i--)
         {
-            
+            if((Page_Sum[compare_idx]-Page_Sum[i])>mid)
+            {
+                compare_idx=i+1;
+                validation.push_back(i);
+                split_count++;
+            }
         }
-        if(cnt==K)
-            result=validation;
-        else
-            cnt=0;
-        if (K < cnt)
+        
+        if (split_count > K)
+        {
             left = mid + 1;
+        }
         else
+        {
             right = mid - 1;
+        }
         mid = (left + right) / 2;
+        if(left > right && split_count>K)
+        {
+            right=left;
+            mid = (left + right) / 2;
+            continue;
+        }
+        if(left > right)
+        {
+            result = validation;
+        }
     }
-    result[K-1]=N-1;
-    
-    int s=0;
-    for(int i=0;i<K;i++)
+    long long start_idx, end_idx;
+    long long skew=K-(result.size()+1);
+    long long split_point = result.back();
+    result.pop_back();
+
+    for(long long i=0;i<N;i++)
     {
-        for(int j=s;j<=result[i];j++)
-        //    cout<<Page[j]<<" ";
-        if(i!=K-1)
-        //    cout<<"/ ";
-        s = result[i]+1;
-        if(i==0)
-            cout<<Page_Sum[result[i]]<<'\n';
-        else
-            cout<<Page_Sum[result[i]]-Page_Sum[result[i-1]]<<'\n';
+        cout<<Page[i]<<" ";
+        if(i==split_point)
+        {
+            cout<<"/ ";
+            split_point = result.back();
+            result.pop_back();
+        }
+        else if(skew>=1)
+        {
+            skew--;
+            cout<<"/ ";
+        }
     }
-    int debug=0;
+    cout<<'\n';
 }

@@ -63,7 +63,8 @@
         "xtree": "cpp",
         "xhash": "cpp",
         "map": "cpp",
-        "unordered_map": "cpp"
+        "unordered_map": "cpp",
+        "unordered_set": "cpp"
     },
     "C_Cpp.default.compilerPath": "cl.exe"
 }
