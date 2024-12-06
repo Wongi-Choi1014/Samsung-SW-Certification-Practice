@@ -194,6 +194,7 @@ void DFS(int mStartSpot, int mEndSpot, int mMaxTime)
 	{
 		if (Bike_Status == true && Bike_Station[mEndSpot] == 0)
 		{
+			/*
 			Station[mEndSpot] = 0;
 			Return_Bike_Status = 1;
             Station_Return_BIKE[mEndSpot]=1;
@@ -201,16 +202,19 @@ void DFS(int mStartSpot, int mEndSpot, int mMaxTime)
             Station[mEndSpot] = 1;
             Return_Bike_Status = 0;
             Station_Return_BIKE[mEndSpot]=0;
-            return;
+            return;*/
 		}
-		if (find_solution == false)
-		{
-			find_solution = true;
-			solution_minimum_money = solution_money;
+		else{
+			if (find_solution == false)
+			{
+				find_solution = true;
+				solution_minimum_money = solution_money;
+			}
+			if(solution_minimum_money >solution_money)
+				solution_minimum_money = solution_money;
+			return;
 		}
-		if(solution_minimum_money >solution_money)
-			solution_minimum_money = solution_money;
-		return;
+		
 	}
 
 	//DFS Search
@@ -223,9 +227,9 @@ void DFS(int mStartSpot, int mEndSpot, int mMaxTime)
 		if (Station[i] != 1 && Road[mStartSpot][i]>-1)
 		{
 			
-			Station[i] = 1;
+			//Station[i] = 1;
 			//Walk
-			
+			Station[i] = 1;
 			if (Bike_Status == true && Bike_Station[mStartSpot] == 1)
 			{
 				Bike_Status = false;
@@ -255,42 +259,49 @@ void DFS(int mStartSpot, int mEndSpot, int mMaxTime)
 					Taxi_Status = true;
 			}
 				
-
+			Station[i] = 0;
 			//Bike
             //if(Return_Bike_Status ==0)
             //{
-            if (Bike_Status == true)
-            {
-                solution_money += money_time_bike[mStartSpot][i].first;
-                solution_time += money_time_bike[mStartSpot][i].second;
+			if(Station_Return_BIKE[i]!=1)
+			{
+				Station_Return_BIKE[i] = 1;
+				if (Bike_Status == true)
+				{
+					solution_money += money_time_bike[mStartSpot][i].first;
+					solution_time += money_time_bike[mStartSpot][i].second;
 
-                DFS(i, mEndSpot, mMaxTime);
+					DFS(i, mEndSpot, mMaxTime);
 
-                solution_money -= money_time_bike[mStartSpot][i].first;
-                solution_time -= money_time_bike[mStartSpot][i].second;
-            }
-            if (Bike_Status == false && Bike_Station[mStartSpot] == 1)
-            {
-                bool tmp_taxi = false;
-                if (Taxi_Status == true)
-                {
-                    Taxi_Status = false;
-                    tmp_taxi = true;
-                }
-                Bike_Status = true;
-                solution_money += money_time_bike[mStartSpot][i].first;
-                solution_time += money_time_bike[mStartSpot][i].second;
+					solution_money -= money_time_bike[mStartSpot][i].first;
+					solution_time -= money_time_bike[mStartSpot][i].second;
+				}
+				if (Bike_Status == false && Bike_Station[mStartSpot] == 1)
+				{
+					bool tmp_taxi = false;
+					if (Taxi_Status == true)
+					{
+						Taxi_Status = false;
+						tmp_taxi = true;
+					}
+					Bike_Status = true;
+					solution_money += money_time_bike[mStartSpot][i].first;
+					solution_time += money_time_bike[mStartSpot][i].second;
 
-                DFS(i, mEndSpot, mMaxTime);
+					DFS(i, mEndSpot, mMaxTime);
 
-                solution_money -= money_time_bike[mStartSpot][i].first;
-                solution_time -= money_time_bike[mStartSpot][i].second;
-                if (tmp_taxi == true)
-                    Taxi_Status = true;
-                Bike_Status = false;
-            }
-            //}
+					solution_money -= money_time_bike[mStartSpot][i].first;
+					solution_time -= money_time_bike[mStartSpot][i].second;
+					if (tmp_taxi == true)
+						Taxi_Status = true;
+					Bike_Status = false;
+				}
+
+				Station_Return_BIKE[i] = 0;
+			}
+            
 			//Taxi
+			Station[i] = 1;
 			if (Bike_Status == true && Bike_Station[mStartSpot] == 1)
 			{
 				Bike_Status = false;
