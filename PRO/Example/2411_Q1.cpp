@@ -88,6 +88,8 @@ using namespace std;
 struct Road{
     int Road_ID;
     int Road_Cost;
+    int visit;
+    int value;
 };
 
 struct Road_index{
@@ -99,24 +101,28 @@ struct dist{
     int min_cost;
     int max_cost;
     int value;
+    int eCity;
+    //작은순서 정렬
+    bool operator<(const dist& d) const {
+		return value > d.value;
+	}
 };
 
 int My_N,My_K;
 Road Road_Arr[400][400];
 unordered_map<int,Road_index> Current_Road;
 //multiset<int,vector<int>,greater<int>()> result;
-multiset<int,greater<int>> result;
+//multiset<int,greater<int>> result;
 
 //dijkstra 변수 start
 #define INF 100000
+#define Max_Cost 600
 
-int pre[400];
-int visit[400];
+int min_cost_arr[400][600];
 dist dist_Arr[400];
-dist dist_Arr_duplicated[400];
-void dijkstra(int sCity, int eCity);
+int dijkstra(int sCity, int eCity);
 
-#include <queue>
+priority_queue<dist> pq;
 //
 int dijkstra_duplicated(int sCity, int eCity, int count);
 int visit_duplicated[400];
@@ -132,6 +138,8 @@ void init(int N, int K, int mId[], int sCity[], int eCity[], int mCost[]) {
         {
             Road_Arr[i][j].Road_ID = 0;
             Road_Arr[i][j].Road_Cost = 0;
+            Road_Arr[i][j].visit = 0;
+            Road_Arr[i][j].value = INF;
         }
     }
 
@@ -166,289 +174,105 @@ void remove(int mId) {
 int cost(int sCity, int eCity) {
 	int i;
 	int j;
-	int from;
-	int to;
-	int value;
 
-    int Max_Cost=-1, Min_Cost=-1;
     int result_value=500;
-    
+    pq={};
+
+    for (i = 0; i < My_N; i++)
+    {
+        dist_Arr[i].value = INF;
+        dist_Arr[i].min_cost = 0;
+        dist_Arr[i].max_cost = 0;
+        dist_Arr[i].eCity = i;
+
+        for(j=0;j<Max_Cost;j++)
+        {
+            if(i==sCity)
+                min_cost_arr[i][j] = 0;
+            else
+                min_cost_arr[i][j] = INF;
+        }
+    }
+    //init condition
     for (j = 0; j < My_N; j++)
     {
         if (sCity == j) continue;
         if (Road_Arr[sCity][j].Road_Cost == 0) continue;
 
-        for (i = 0; i < My_N; i++)
-        {
-            dist_Arr[i].value = INF;
-            dist_Arr[i].min_cost = 0;
-            dist_Arr[i].max_cost = 0;
-            visit[i] = 0;
-            pre[i] = -1;
-        }
-        //init condition
-        int v = sCity;
-        if(dist_Arr[v].max_cost==0 && dist_Arr[v].min_cost==0)
-        {
-            int next_cost = 0;
-            if (dist_Arr[j].value > next_cost)
-            {
-                dist_Arr[j].value = next_cost;
-                dist_Arr[j].max_cost = Road_Arr[v][j].Road_Cost;
-
-                dist_Arr[j].min_cost = Road_Arr[v][j].Road_Cost;
-                pre[j] = v;
-            }
-        }
-        visit[v] = 1;
-        dijkstra(j, eCity);
-        if(result_value>dist_Arr[eCity].value)
-            result_value = dist_Arr[eCity].value;
+        min_cost_arr[j][Road_Arr[sCity][j].Road_Cost] = 0;
+        dist_Arr[j].value = 0;
+        dist_Arr[j].max_cost = Road_Arr[sCity][j].Road_Cost;
+        dist_Arr[j].min_cost = Road_Arr[sCity][j].Road_Cost;
+        
+        pq.push(dist_Arr[j]);
+                
     }
     
-    /*
-    auto first = result.begin(); 
-    if (first != result.end()) 
-    { 
-        Max_Cost =  *first; 
-    } // Access the last element 
+    result_value=dijkstra(sCity, eCity);
     
-    auto last = result.end(); 
-    if (last != result.begin()) 
-    { 
-        --last; // Move iterator to the last element 
-        Min_Cost = *last; 
-    }
-    */
 
     if(result_value<500)
         return result_value; 
 	return -1;
 }
 
-void dijkstra(int sCity, int eCity)
+int dijkstra(int sCity, int eCity)
 {
-    int i;
 	int j;
-	int min;
-	int v=INF;
-
     int result_value=500;
-    
-	dist_Arr[sCity].value = 0;
-
-	for (i = 0; i < My_N-1; i++)
-	{
-		min = INF;
-
-		for (j = 0; j < My_N; j++)
-		{
-			if ((visit[j] == 0) && (min > dist_Arr[j].value))
-			{
-				min = dist_Arr[j].value;
-				v = j;
-			}
-		}
-        if(v==INF)
-            break;
-		visit[v] = 1;
-		
-		
-		for (j = 0; j < My_N; j++)
-		{
-			if (j == v) continue;
-			if (Road_Arr[v][j].Road_Cost == 0) continue;
-            
-            int next_cost;
-            next_cost = dist_Arr[v].value;
-            if (dist_Arr[j].value == next_cost)
-            {
-                for (int z = 0; z < My_N; z++)
-                {
-                    dist_Arr_duplicated[z].value = dist_Arr[z].value;
-                    dist_Arr_duplicated[z].min_cost = dist_Arr[z].min_cost;
-                    dist_Arr_duplicated[z].max_cost = dist_Arr[z].max_cost;
-                    visit_duplicated[z]=visit[z];
-                }
-                
-                //
-                dist_Arr[j].value = next_cost;
-
-                dist_Arr[j].min_cost = dist_Arr[v].min_cost;
-                dist_Arr[j].max_cost = dist_Arr[v].max_cost;
-
-                pre[j] = v;
-                //
-                int dup_value = dijkstra_duplicated(sCity,eCity,i);
-                if(result_value>dup_value)
-                    result_value=dup_value;
-
-                //
-                for (int z = 0; z < My_N; z++)
-                {
-                    dist_Arr[j].value = dist_Arr_duplicated[j].value;
-                    dist_Arr[j].min_cost = dist_Arr_duplicated[j].min_cost;
-                    dist_Arr[j].max_cost = dist_Arr_duplicated[j].max_cost;
-                    visit[z]=visit_duplicated[z];
-                }
-            }
-
-            else if(Road_Arr[v][j].Road_Cost>dist_Arr[v].max_cost)
-            {
-                next_cost = Road_Arr[v][j].Road_Cost - dist_Arr[v].min_cost;
-                if (dist_Arr[j].value > next_cost)
-                {
-                    dist_Arr[j].value = next_cost;
-
-                    dist_Arr[j].min_cost = dist_Arr[v].min_cost;
-                    dist_Arr[j].max_cost = Road_Arr[v][j].Road_Cost;
-
-                    pre[j] = v;
-                }
-            }
-            else if(Road_Arr[v][j].Road_Cost<dist_Arr[v].min_cost)
-            {
-                next_cost = dist_Arr[v].max_cost - Road_Arr[v][j].Road_Cost;
-                if (dist_Arr[j].value > next_cost)
-                {
-                    dist_Arr[j].value = next_cost;
-
-                    dist_Arr[j].min_cost = Road_Arr[v][j].Road_Cost;
-                    dist_Arr[j].max_cost = dist_Arr[v].max_cost;
-                    
-                    pre[j] = v;
-                }
-            }
-            
-            else
-            {
-                next_cost = dist_Arr[v].value;
-                if (dist_Arr[j].value > next_cost)
-                {
-                    dist_Arr[j].value = next_cost;
-
-                    dist_Arr[j].min_cost = dist_Arr[v].min_cost;
-                    dist_Arr[j].max_cost = dist_Arr[v].max_cost;
-                    pre[j] = v;
-                }
-            }
-            
-                
-		}
-	}
-
-    if(result_value<dist_Arr[eCity].value)
-        dist_Arr[eCity].value=result_value;
-}
-
-int dijkstra_duplicated(int sCity, int eCity, int count)
-{
-    int i;
-	int j;
-	int min;
-	int v=INF;
-
-	int result_value=500;
     
 	//dist_Arr[sCity].value = 0;
 
-	for (i = count+1; i < My_N-1; i++)
+	while(!pq.empty())
 	{
-		min = INF;
-
+        dist dist_c = pq.top();
+        pq.pop();
+        //visit[dist_c.eCity]=1;
+		if(dist_c.eCity==eCity)
+            return dist_c.value;
 		for (j = 0; j < My_N; j++)
 		{
-			if ((visit[j] == 0) && (min > dist_Arr[j].value))
-			{
-				min = dist_Arr[j].value;
-				v = j;
-			}
-		}
-        if(v==INF)
-            break;
-		visit[v] = 1;
-		
-		
-		for (j = 0; j < My_N; j++)
-		{
-			if (j == v) continue;
-			if (Road_Arr[v][j].Road_Cost == 0) continue;
-            
+			if (j == dist_c.eCity) continue;
+			if (Road_Arr[dist_c.eCity][j].Road_Cost == 0) continue;
+            //if(Road_Arr[dist_c.eCity][j].visit == 0)
+            //    Road_Arr[dist_c.eCity][j].visit = 1;
+            //else
+             //   continue;
+            //if (visit[dist_c.eCity]==1)
             int next_cost;
-            next_cost = dist_Arr[v].value;
-            if (dist_Arr[j].value == next_cost)
+            //int prev_min_cost = dist_Arr[j].min_cost;
+
+            if(Road_Arr[dist_c.eCity][j].Road_Cost>dist_c.max_cost)
             {
-                for (int z = 0; z < My_N; z++)
-                {
-                    dist_Arr_duplicated[z].value = dist_Arr[z].value;
-                    dist_Arr_duplicated[z].min_cost = dist_Arr[z].min_cost;
-                    dist_Arr_duplicated[z].max_cost = dist_Arr[z].max_cost;
-                }
-                
-                //
-                dist_Arr[j].value = next_cost;
-
-                dist_Arr[j].min_cost = dist_Arr[v].min_cost;
-                dist_Arr[j].max_cost = dist_Arr[v].max_cost;
-
-                pre[j] = v;
-                //
-                int dup_value = dijkstra_duplicated(sCity,eCity,i);
-                if(result_value>dup_value)
-                    result_value=dup_value;
-
-                //
-                for (int z = 0; z < My_N; z++)
-                {
-                    dist_Arr[j].value = dist_Arr_duplicated[j].value;
-                    dist_Arr[j].min_cost = dist_Arr_duplicated[j].min_cost;
-                    dist_Arr[j].max_cost = dist_Arr_duplicated[j].max_cost;
-                }
+                next_cost = Road_Arr[dist_c.eCity][j].Road_Cost - dist_c.min_cost;
+                dist_Arr[j].min_cost = dist_c.min_cost;
+                dist_Arr[j].max_cost = Road_Arr[dist_c.eCity][j].Road_Cost;
             }
-
-            else if(Road_Arr[v][j].Road_Cost>dist_Arr[v].max_cost)
+            
+            else if(Road_Arr[dist_c.eCity][j].Road_Cost<dist_c.min_cost)
             {
-                next_cost = Road_Arr[v][j].Road_Cost - dist_Arr[v].min_cost;
-                if (dist_Arr[j].value > next_cost)
-                {
-                    dist_Arr[j].value = next_cost;
-
-                    dist_Arr[j].min_cost = dist_Arr[v].min_cost;
-                    dist_Arr[j].max_cost = Road_Arr[v][j].Road_Cost;
-
-                    pre[j] = v;
-                }
-            }
-            else if(Road_Arr[v][j].Road_Cost<dist_Arr[v].min_cost)
-            {
-                next_cost = dist_Arr[v].max_cost - Road_Arr[v][j].Road_Cost;
-                if (dist_Arr[j].value > next_cost)
-                {
-                    dist_Arr[j].value = next_cost;
-
-                    dist_Arr[j].min_cost = Road_Arr[v][j].Road_Cost;
-                    dist_Arr[j].max_cost = dist_Arr[v].max_cost;
-                    
-                    pre[j] = v;
-                }
+                next_cost = dist_c.max_cost - Road_Arr[dist_c.eCity][j].Road_Cost;
+                dist_Arr[j].min_cost = Road_Arr[dist_c.eCity][j].Road_Cost;
+                dist_Arr[j].max_cost = dist_c.max_cost;
             }
             
             else
             {
-                next_cost = dist_Arr[v].value;
-                if (dist_Arr[j].value > next_cost)
-                {
-                    dist_Arr[j].value = next_cost;
+                next_cost = dist_c.value;
+                dist_Arr[j].min_cost = dist_c.min_cost;
+                dist_Arr[j].max_cost = dist_c.max_cost;
+            }
 
-                    dist_Arr[j].min_cost = dist_Arr[v].min_cost;
-                    dist_Arr[j].max_cost = dist_Arr[v].max_cost;
-                    pre[j] = v;
-                }
+
+            if (min_cost_arr[j][dist_Arr[j].min_cost] > next_cost)
+            {
+                min_cost_arr[j][dist_Arr[j].min_cost] = next_cost;
+                dist_Arr[j].value = next_cost;
+                pq.push(dist_Arr[j]);
+                //pq.push({dist_Arr[j].min_cost, dist_Arr[j].max_cost, dist_Arr[j].value, dist_Arr[j].eCity});
             }
             
-                
 		}
 	}
-
-    return dist_Arr[eCity].value;
+    return -1;
 }
