@@ -89,7 +89,7 @@ int main()
 
 //user.cpp
 /*
-풀이이
+풀이
 1. hash arr[숫자3] 숫자별로 저장한다. (전역변수 설정)
 2. 각 줄 숫자에 맞는 전역변수 설정하기(A줄, B줄)
 3. 앞열에 숫자 추가할 경우 +A, B+ 일 경우 +자릿수 계산한다음 3자리 숫자 더하기
@@ -104,67 +104,93 @@ Review
 
 #include <iostream>
 #include <queue>
+#include <vector>
 using namespace std;
 
 int countArr[1100];
-deque<int> A_Line;
-deque<int> B_Line;
+int A_front[2];
+int B_front[2];
+int A_back[2];
+int B_back[2];
+
+vector<int> A_append_right;
+vector<int> B_append_right;
+
+//deque<int> A_Line;
+//deque<int> B_Line;
 
 int Boundary_Case[2];
 void init_arr()
 {
+    A_append_right.reserve(5);
+    B_append_right.reserve(5);
     for(int i = 0; i<1100; i++)
         countArr[i] = 0;
     for(int i = 0; i<2; i++)
+    {
         Boundary_Case[i] = 0;
-    A_Line.clear();
-    B_Line.clear();
+        A_front[i] = 0;
+        B_front[i] = 0;
+        A_back[i] = 0;
+        B_back[i] = 0;
+    }
+    //A_Line.clear();
+    //B_Line.clear();
 }
 void init(int mCnt1, int mDigitList1[30000], int mCnt2, int mDigitList2[30000]){
     init_arr();
     int A_1 = 0, A_2 = 0, A_3 = 0;
     int B_1 = 0, B_2 = 0, B_3 = 0;
     for(int i = 0; i < mCnt1; i++){
-        A_Line.push_back(mDigitList1[i]);
+        //A_Line.push_back(mDigitList1[i]);
         A_1 = mDigitList1[i];
         if(i>1)
             countArr[A_3*100 + A_2*10 + A_1]++;
+        else
+            A_front[i] = A_1;
         A_3 = A_2;
         A_2 = A_1;
 
     }
     for(int i = 0; i < mCnt2; i++){
-        B_Line.push_back(mDigitList2[i]);
+       //B_Line.push_back(mDigitList2[i]);
         B_1 = mDigitList2[i];
         if(i>1)
-            countArr[B_3*100 + B_2*10 + B_1]++;
+            countArr[B_3*100 + B_2*10 + B_1]++;\
+        else
+            B_front[i] = B_1;
         B_3 = B_2;
         B_2 = B_1;
     }
     //Boundary case
-    int A_last_idx = A_Line.size()-1;
-    Boundary_Case[0] = A_Line[A_last_idx-1]*100 + A_Line[A_last_idx]*10 + B_Line[0];
+    //int A_last_idx = A_Line.size()-1;
+    A_back[0] = A_3;
+    A_back[1] = A_2;
+
+    B_back[0] = B_3;
+    B_back[1] = B_2;
+    Boundary_Case[0] = A_back[0]*100 + A_back[1]*10 + B_front[0];
     countArr[Boundary_Case[0]]++;
-    Boundary_Case[1] = A_Line[A_last_idx]*100 + B_Line[0]*10 + B_Line[1];
+    Boundary_Case[1] = A_back[1]*100 + B_front[0]*10 + B_front[1];
     countArr[Boundary_Case[1]]++;
     //int Test=0;
 }
 
 void append(int mDir, int mNum1, int mNum2){
     //Boundary case
-    if(Boundary_Case[0]>0)
-        countArr[Boundary_Case[0]]--;
-    if(Boundary_Case[1]>0)
-        countArr[Boundary_Case[1]]--;
+    //if(Boundary_Case[0]>0)
+    countArr[Boundary_Case[0]]--;
+    //if(Boundary_Case[1]>0)
+    countArr[Boundary_Case[1]]--;
     if(mDir == 0)
     {
         //+A
-        int A_1 = A_Line[1], A_2 = A_Line[0], A_3 = 0;
+        int A_1 = A_front[1], A_2 = A_front[0], A_3 = 0;
         int Data = mNum1;
 
         while(Data > 0)
         {
-            A_Line.push_front(Data%10);
+            //A_Line.push_front(Data%10);
             A_3 = Data%10;
             countArr[A_3*100 + A_2*10 + A_1]++;
             Data /= 10;
@@ -172,13 +198,16 @@ void append(int mDir, int mNum1, int mNum2){
             A_1 = A_2;
             A_2 = A_3;
         }
+        A_front[0] = A_2;
+        A_front[1] = A_1;
+
         //+B
-        int B_1 = B_Line[1], B_2 = B_Line[0], B_3 = 0;
+        int B_1 = B_front[1], B_2 = B_front[0], B_3 = 0;
         Data = mNum2;
 
         while(Data > 0)
         {
-            B_Line.push_front(Data%10);
+            //B_Line.push_front(Data%10);
             B_3 = Data%10;
             countArr[B_3*100 + B_2*10 + B_1]++;
             Data /= 10;
@@ -187,65 +216,73 @@ void append(int mDir, int mNum1, int mNum2){
             B_1 = B_2;
             B_2 = B_3;
         }
+        B_front[0] = B_2;
+        B_front[1] = B_1;
+
         //Boundary case
-        int A_last_idx = A_Line.size()-1;
-        Boundary_Case[0] = A_Line[A_last_idx-1]*100 + A_Line[A_last_idx]*10 + B_Line[0];
+        //int A_last_idx = A_Line.size()-1;
+        Boundary_Case[0] = A_back[0]*100 + A_back[1]*10 + B_front[0];
         countArr[Boundary_Case[0]]++;
-        Boundary_Case[1] = A_Line[A_last_idx]*100 + B_Line[0]*10 + B_Line[1];
+        Boundary_Case[1] = A_back[1]*100 + B_front[0]*10 + B_front[1];
         countArr[Boundary_Case[1]]++;
     }
 
     else
     {
         //A+
-        int A_last_idx = A_Line.size()-1;
-        int A_1 = 0, A_2 = A_Line[A_last_idx], A_3 = A_Line[A_last_idx-1];
+        //int A_last_idx = A_Line.size()-1;
+        int A_1 = 0, A_2 = A_back[1], A_3 = A_back[0];
         int Data = mNum1;
-        deque<int> A_append_right;
+        A_append_right.clear();
+        B_append_right.clear();
         while(Data > 0)
         {
-            A_append_right.push_front(Data%10);
+            A_append_right.push_back(Data%10);
             Data /= 10;
             
         }
         
-        for(int i = 0; i<A_append_right.size(); i++)
+        for(int i = A_append_right.size()-1; i>=0; i--)
         {
             A_1 = A_append_right[i];
-            A_Line.push_back(A_append_right[i]);
+            //A_Line.push_back(A_append_right[i]);
             countArr[A_3*100 + A_2*10 + A_1]++;
 
             A_3 = A_2;
             A_2 = A_1;
         }
+        A_back[0] = A_3;
+        A_back[1] = A_2;
         //Boundary case
-        A_last_idx = A_Line.size()-1;
-        Boundary_Case[0] = A_Line[A_last_idx-1]*100 + A_Line[A_last_idx]*10 + B_Line[0];
+        //A_last_idx = A_Line.size()-1;
+        Boundary_Case[0] = A_back[0]*100 + A_back[1]*10 + B_front[0];
         countArr[Boundary_Case[0]]++;
-        Boundary_Case[1] = A_Line[A_last_idx]*100 + B_Line[0]*10 + B_Line[1];
+        Boundary_Case[1] = A_back[1]*100 + B_front[0]*10 + B_front[1];
         countArr[Boundary_Case[1]]++;
             
         //B+
-        int B_last_idx = B_Line.size()-1;
-        int B_1 = 0, B_2 = B_Line[B_last_idx], B_3 = B_Line[B_last_idx-1];
+        //int B_last_idx = B_Line.size()-1;
+        int B_1 = 0, B_2 = B_back[1], B_3 = B_back[0];
         Data = mNum2;
-        deque<int> B_append_right;
+        
         while(Data > 0)
         {
-            B_append_right.push_front(Data%10);
+            B_append_right.push_back(Data%10);
             Data /= 10;
             
         }
         
-        for(int i = 0; i<B_append_right.size(); i++)
+        for(int i = B_append_right.size()-1; i>=0; i--)
         {
             B_1 = B_append_right[i];
-            B_Line.push_back(B_append_right[i]);
+            //B_Line.push_back(B_append_right[i]);
             countArr[B_3*100 + B_2*10 + B_1]++;
 
             B_3 = B_2;
             B_2 = B_1;
         }
+        B_back[0] = B_3;
+        B_back[1] = B_2;
 
     }
 }
