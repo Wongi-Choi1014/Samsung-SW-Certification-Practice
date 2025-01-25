@@ -168,49 +168,48 @@ private:
         int distNode = distance(target, node->radio);
         //if (distNode < distBest) best = node->radio;
 
-		if(node->radio.mFreq!= same_freq){
+		if(distNode!=0){
 			if (pq_all.size() < K) {
-				pq_all.push({distNode, node->radio});
+            	pq_all.push({distNode, node->radio});
 			}
 			else if (distNode < pq_all.top().first) {
 				pq_all.pop();
 				pq_all.push({distNode, node->radio});
 			}
 		}
-		else if(distNode!=0){
-			if (pq_same_freq.size() < K) {
-            	pq_same_freq.push({distNode, node->radio});
-			}
-			else if (distNode < pq_same_freq.top().first) {
-				pq_same_freq.pop();
-				pq_same_freq.push({distNode, node->radio});
-			}
-		}
 		
         int axis = depth % 2;
         Node *next = (axis == 0 ? target.mX < node->radio.mX : target.mY < node->radio.mY) ? node->left : node->right;
         Node *other = (next == node->left) ? node->right : node->left;
-
-        //best = 
-		nearest(next, target, depth + 1, best,K,same_freq);
-		/*
+		
 		int node_validation = std::abs((axis == 0 ? target.mX - node->radio.mX : target.mY - node->radio.mY));
-		int pq_all_validation = pq_all.empty() ? 0 : std::abs((axis == 0 ? target.mX - pq_all.top().second.mX : target.mY - pq_all.top().second.mY));
+		/*int pq_all_validation = pq_all.empty() ? 0 : std::abs((axis == 0 ? target.mX - pq_all.top().second.mX : target.mY - pq_all.top().second.mY));
 		int pq_same_freq_validation = pq_same_freq.empty() ? 0 : std::abs((axis == 0 ? target.mX - pq_same_freq.top().second.mX : target.mY - pq_same_freq.top().second.mY));
 		int pq_validation = pq_all_validation> pq_same_freq_validation ? pq_all_validation : pq_same_freq_validation;
         if (other && node_validation < pq_validation) {
             //best = 
 			nearest(other, target, depth + 1, best,K,same_freq);
-        }*/
-		if (other && std::abs((axis == 0 ? target.mX - node->radio.mX : target.mY - node->radio.mY)) < 999) {
-            nearest(other, target, depth + 1, best,K,same_freq);
         }
-
+		*/
+		if (pq_all.size() < K || ((node_validation < 10000))) {
+			nearest(next, target, depth + 1, best,K,same_freq);
+        }
+		
+		//if (other && std::abs((axis == 0 ? target.mX - node->radio.mX : target.mY - node->radio.mY)) < 999) {
+        if (pq_all.size() < K || ((node_validation < 3010) && (node_validation < pq_all.top().first/10))) {
+			nearest(other, target, depth + 1, best,K,same_freq);
+        }
+		
         return;//best;
     }
 
     int distance(const Radio &a, const Radio &b) {
-        return abs(a.mX - b.mX) + abs(a.mY - b.mY);
+		int power;
+		if(a.mFreq!=b.mFreq)
+			power = 1000+ (abs(a.mX - b.mX) + abs(a.mY - b.mY))*10;
+		else
+			power = (abs(a.mX - b.mX) + abs(a.mY - b.mY))*10;
+        return power;
 	}
 	 void clearRec(Node* node) {
         if (!node) return;
@@ -255,24 +254,16 @@ int getMinPower(int mID, int mCount)
 {
 	Radio target(Radio_List[mID]);
 	tree.nearestNeighbor(target, mCount, target.mFreq);
-	std::priority_queue<int,vector<int>,greater<int>> result;
-	int power;
+	vector<int> result;
 	int result_sum=0;
-	while (!pq_all.empty()) {
-		power = 1000+ (abs(pq_all.top().second.mX - target.mX) + abs(pq_all.top().second.mY - target.mY))*10;
-		result.push(power);
-		pq_all.pop();
-	}
 
-	while (!pq_same_freq.empty()) {
-		power = (abs(pq_same_freq.top().second.mX - target.mX) + abs(pq_same_freq.top().second.mY - target.mY))*10;
-		result.push(power);
-		pq_same_freq.pop();
+	while (!pq_all.empty()) {
+		result.push_back(pq_all.top().first);
+		pq_all.pop();
 	}
 	for(int i = 0; i < mCount; i++)
 	{
-		result_sum += result.top();
-		result.pop();
+		result_sum += result[i];
 	}
 
 	return result_sum;
