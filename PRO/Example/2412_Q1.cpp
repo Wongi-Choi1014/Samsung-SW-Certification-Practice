@@ -77,7 +77,7 @@ int main()
 #include <vector>
 #include <cmath>
 #include <algorithm>
-#include <memory>
+
 #include <queue>
 using namespace std;
 
@@ -93,7 +93,7 @@ struct Radio {
 
 struct Node {
     Radio radio;
-    std::shared_ptr<Node> left, right;
+    Node *left, *right;
     Node(Radio radio) : radio(radio), left(nullptr), right(nullptr) {}
 };
 
@@ -122,22 +122,26 @@ public:
         nearest(root, target, 0, root->radio, K, same_freq);
     }
 
+	~KDTree() {
+        clear();
+    }
+
 	void clear() {
         clearRec(root);
-        root.reset();
+        root = nullptr;
     }
 
 private:
-    std::shared_ptr<Node> root;
+    Node* root;
 
-    std::shared_ptr<Node> build(std::vector<Radio> radios, int depth) {
+    Node* build(std::vector<Radio> radios, int depth) {
         if (radios.empty()) return nullptr;
         int axis = depth % 2;
         std::sort(radios.begin(), radios.end(), [axis](const Radio &a, const Radio &b) {
             return axis == 0 ? a.mX < b.mX : a.mY < b.mY;
         });
         int mid = radios.size() / 2;
-        std::shared_ptr<Node> node = make_shared<Node>(radios[mid]);
+        Node *node = new Node(radios[mid]);
         std::vector<Radio> leftRadios(radios.begin(), radios.begin() + mid);
         std::vector<Radio> rightRadios(radios.begin() + mid + 1, radios.end());
         node->left = build(leftRadios, depth + 1);
@@ -145,8 +149,8 @@ private:
         return node;
     }
 
-    std::shared_ptr<Node> insert(std::shared_ptr<Node> node, const Radio &radio, int depth) {
-        if (!node) return make_shared<Node>(radio);
+    Node* insert(Node* node, const Radio &radio, int depth) {
+        if (!node) return new Node(radio);
         int axis = depth % 2;
         if (axis == 0) {
             if (radio.mX < node->radio.mX) node->left = insert(node->left, radio, depth + 1);
@@ -158,7 +162,7 @@ private:
         return node;
     }
 
-    void nearest(std::shared_ptr<Node> node, const Radio &target, int depth, Radio best, int K, int same_freq) {
+    void nearest(Node* node, const Radio &target, int depth, Radio best, int K, int same_freq) {
         if (!node) return;//best;
         //int distBest = distance(target, best);
         int distNode = distance(target, node->radio);
@@ -184,39 +188,35 @@ private:
 		}
 		
         int axis = depth % 2;
-        std::shared_ptr<Node> next = (axis == 0 ? target.mX < node->radio.mX : target.mY < node->radio.mY) ? node->left : node->right;
-        std::shared_ptr<Node> other = (next == node->left) ? node->right : node->left;
-		
+        Node *next = (axis == 0 ? target.mX < node->radio.mX : target.mY < node->radio.mY) ? node->left : node->right;
+        Node *other = (next == node->left) ? node->right : node->left;
+
         //best = 
 		nearest(next, target, depth + 1, best,K,same_freq);
 		/*
 		int node_validation = std::abs((axis == 0 ? target.mX - node->radio.mX : target.mY - node->radio.mY));
-		int pq_all_validation = pq_all.empty() ? -1 : pq_all.top().first;
-		int pq_same_freq_validation = pq_same_freq.empty() ? -1 : pq_same_freq.top().first;
+		int pq_all_validation = pq_all.empty() ? 0 : std::abs((axis == 0 ? target.mX - pq_all.top().second.mX : target.mY - pq_all.top().second.mY));
+		int pq_same_freq_validation = pq_same_freq.empty() ? 0 : std::abs((axis == 0 ? target.mX - pq_same_freq.top().second.mX : target.mY - pq_same_freq.top().second.mY));
 		int pq_validation = pq_all_validation> pq_same_freq_validation ? pq_all_validation : pq_same_freq_validation;
-        if ((pq_all.size()<K||pq_all.size()<K)|| node_validation < pq_validation) {
+        if (other && node_validation < pq_validation) {
             //best = 
 			nearest(other, target, depth + 1, best,K,same_freq);
-        }
-		*/
-		
+        }*/
 		if (other && std::abs((axis == 0 ? target.mX - node->radio.mX : target.mY - node->radio.mY)) < 999) {
             nearest(other, target, depth + 1, best,K,same_freq);
         }
-		
-		
+
         return;//best;
     }
 
     int distance(const Radio &a, const Radio &b) {
-		//return sqrt(pow(a.mX - b.mX, 2) + pow(a.mY - b.mY, 2));
         return abs(a.mX - b.mX) + abs(a.mY - b.mY);
 	}
-	void clearRec(std::shared_ptr<Node> node) {
+	 void clearRec(Node* node) {
         if (!node) return;
         clearRec(node->left);
         clearRec(node->right);
-        node.reset();
+        delete node;
     }
 };
 
