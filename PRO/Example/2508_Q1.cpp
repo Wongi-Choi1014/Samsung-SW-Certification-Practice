@@ -84,10 +84,11 @@ int main()
 //Land ¹è¿­ »¬Áö Current Time »¬Áö °í¹Î
 
 #include <iostream>
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include <utility> 
 #include <algorithm>
+#include <math.h>
 using namespace std;
 
 struct Plant
@@ -96,10 +97,14 @@ struct Plant
 	int SowTime=-1;
 	int GrowthTime=-1;
 	int G_Size = -1;
+	int Row=-1;
+	int Col=-1;
+	//bool erase = false;
 };
 
-map<int, map<int, Plant>> Current_Plant[32][32];
+unordered_map<int, unordered_map<int, vector<Plant>>> Current_Plant;
 Plant Land[1005][1005];
+//unordered_map<int, unordered_map<int, bool>> Land;
 int My_N;
 int CurrentTime=0;
 int GrowthTime[3];
@@ -109,18 +114,18 @@ void init(int N, int mGrowthTime[]) {
 	//ios::sync_with_stdio(0);
 	//cin.tie(0);
 	//cout.tie(0);
-	
-	for(int i=0;i<32;i++)
-	{
-		for(int j=0;j<32;j++)
-			Current_Plant[i][j].clear();
-	}
-	
+	Current_Plant.clear();
+	// for(int i=0;i<100;i++)
+	// {
+	// 	for(int j=0;j<100;j++)
+	// 		Current_Plant[i][j].clear();
+	// }
 	for (int i = 0; i < N; i++)
 	{
 		for (int j = 0; j < N; j++)
-			Land[i][j] = { -1,-1,-1,-1 };
+			Land[i][j] = { -1,-1,-1,-1,-1,-1};
 	}
+	//Land.clear();
 
 	My_N = N;
 	CurrentTime = 0;
@@ -136,11 +141,15 @@ int sow(int mTime, int mRow, int mCol, int mCategory) {
 	sow_plant.SowTime = mTime;
 	sow_plant.GrowthTime = GrowthTime[mCategory];
 	sow_plant.G_Size = 0;
+	sow_plant.Row = mRow;
+	sow_plant.Col = mCol;
 
+	//if (Land.find(mRow) == Land.end() || Land[mRow].find(mCol) == Land[mRow].end() || Land[mRow][mCol] == true)
 	if (Land[mRow][mCol].Category == -1)
 	{
+		//Land[mRow][mCol] = false;
 		Land[mRow][mCol] = sow_plant;
-		Current_Plant[mRow/32][mCol/32][mRow][mCol] = sow_plant;
+		Current_Plant[mRow/(My_N/10)][mCol/(My_N/10)].push_back(sow_plant);
 		return 1;
 	}
 	return 0;
@@ -150,25 +159,24 @@ int water(int mTime, int G, int mRow, int mCol, int mHeight, int mWidth) {
 	CurrentTime = mTime;
 	int water_count = 0;
 	
-	for(int i=mRow/32;i<=(mRow+mHeight)/32;i++)
+	for(int i=mRow/(My_N/10);i<=(mRow+mHeight-1)/(My_N/10);i++)
 	{
-		for (int j = mCol/32; j <= (mCol+mWidth)/32; j++)
+		for (int j = mCol/(My_N/10); j <= (mCol+mWidth-1)/(My_N/10); j++)
 		{
-			for (auto plant_x = Current_Plant[i][j].upper_bound(mRow - 1); plant_x != Current_Plant[i][j].upper_bound(mRow + mHeight - 1);) {
-				for (auto plant_xy = plant_x->second.upper_bound(mCol - 1); plant_xy != plant_x->second.upper_bound(mCol + mWidth - 1);)
+			for(auto& it: Current_Plant[i][j])
+			{
+				if (it.Row >= mRow && it.Row < mRow + mHeight)
 				{
-					if (plant_x->first >= mRow && plant_x->first < mRow + mHeight)
+					if (it.Col >= mCol && it.Col < mCol + mWidth)
+					//if (it.Col >= mCol && it.Col < mCol + mWidth && it.erase== false)
 					{
-						if (plant_xy->first >= mCol && plant_xy->first < mCol + mWidth)
-						{
-							plant_xy->second.G_Size = plant_xy->second.G_Size + G;
-							water_count++;
-						}
+						it.G_Size += G;
+						water_count++;
 					}
-					++plant_xy;
 				}
-				++plant_x;
 			}
+			
+			
 		}
 	}
 	//for (int row = mRow; row < mRow + mHeight; row++) {
@@ -183,39 +191,38 @@ int harvest(int mTime, int L, int mRow, int mCol, int mHeight, int mWidth) {
 	vector<pair<pair<int,int>,pair<int,int>>> erase_arr;
 
 	bool end_flag = false;
-	for(int i=mRow/32;i<=(mRow+mHeight)/32;i++)
+	//int cnt;
+	for(int i=mRow/(My_N/10);i<=(mRow+mHeight-1)/(My_N/10);i++)
 	{
-		for (int j = mCol/32; j <= (mCol+mWidth)/32; j++)
+		for (int j = mCol/(My_N/10); j <= (mCol+mWidth-1)/(My_N/10); j++)
 		{
-			for (auto plant_x = Current_Plant[i][j].upper_bound(mRow - 1); plant_x != Current_Plant[i][j].upper_bound(mRow + mHeight - 1);) {
-				if (end_flag == true)
-					break;
-				for (auto plant_xy = plant_x->second.upper_bound(mCol - 1); plant_xy != plant_x->second.upper_bound(mCol + mWidth-1);)
+			if (end_flag == true)
+				break;
+			//cnt=0;
+			for(auto& it: Current_Plant[i][j])
+			{	
+				if (it.Row >= mRow && it.Row < mRow + mHeight)
 				{
-					if (plant_x->first >= mRow && plant_x->first < mRow + mHeight)
+					if (it.Col >= mCol && it.Col < mCol + mWidth)
+					//if (it.Col >= mCol && it.Col < mCol + mWidth && it.erase== false)
 					{
-						if (plant_xy->first >= mCol && plant_xy->first < mCol + mWidth)
+						int HarvestTime = mTime - it.SowTime;
+						int G = it.G_Size;
+						G += HarvestTime / it.GrowthTime;
+						
+						if (G < L)
 						{
-							int HarvestTime = mTime - plant_xy->second.SowTime;
-							int G = plant_xy->second.G_Size;
-							G += HarvestTime / plant_xy->second.GrowthTime;
-							
-							if (G < L)
-							{
-								end_flag = true;
-								++plant_xy;
-								break;
-							}
-							else
-							{
-								erase_arr.push_back({{i,j},{plant_x->first,plant_xy->first}});
-								harvest_count++;
-							}
+							end_flag = true;
+							break;
+						}
+						else
+						{
+							erase_arr.push_back({{i,j},{it.Row,it.Col}});
+							harvest_count++;
 						}
 					}
-					++plant_xy;
 				}
-				++plant_x;
+				//cnt++;
 			}
 		}
 	}
@@ -223,8 +230,16 @@ int harvest(int mTime, int L, int mRow, int mCol, int mHeight, int mWidth) {
 	{
 		for (const auto&it : erase_arr)
 		{
-			Current_Plant[it.first.first][it.first.second][it.second.first].erase(it.second.second);
-			Land[it.second.first][it.second.second] = { -1,-1,-1,-1 };
+			Current_Plant[it.first.first][it.first.second].erase(remove_if(
+				Current_Plant[it.first.first][it.first.second].begin(),
+				Current_Plant[it.first.first][it.first.second].end(),
+                  [&](const Plant& p) { return p.Row == it.second.first && p.Col == it.second.second; }),
+        		Current_Plant[it.first.first][it.first.second].end()
+			);
+			//Current_Plant[it.first.first][it.first.second][it.second].erase = true;
+			Land[it.second.first][it.second.second] = { -1,-1,-1,-1,-1,-1};
+			//Land[Current_Plant[it.first.first][it.first.second][it.second].Row][Current_Plant[it.first.first][it.first.second][it.second].Col] = { -1,-1,-1,-1,-1,-1};
+			//Land[Current_Plant[it.first.first][it.first.second][it.second].Row][Current_Plant[it.first.first][it.first.second][it.second].Col] = true;
 		}
 		return harvest_count;
 	}
