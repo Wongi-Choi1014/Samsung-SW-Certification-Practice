@@ -102,7 +102,7 @@ struct Plant
 	//bool erase = false;
 };
 
-unordered_map<int, unordered_map<int, vector<Plant>>> Current_Plant;
+vector<Plant> Current_Plant[105][105];
 Plant Land[1005][1005];
 //unordered_map<int, unordered_map<int, bool>> Land;
 int My_N;
@@ -114,7 +114,11 @@ void init(int N, int mGrowthTime[]) {
 	//ios::sync_with_stdio(0);
 	//cin.tie(0);
 	//cout.tie(0);
-	Current_Plant.clear();
+	for (int i = 0; i < 105; i++)
+	{
+		for (int j = 0; j < 105; j++)
+			Current_Plant[i][j].clear();
+	}
 	// for(int i=0;i<100;i++)
 	// {
 	// 	for(int j=0;j<100;j++)
@@ -194,6 +198,8 @@ int harvest(int mTime, int L, int mRow, int mCol, int mHeight, int mWidth) {
 	//int cnt;
 	for(int i=mRow/(My_N/10);i<=(mRow+mHeight-1)/(My_N/10);i++)
 	{
+		if (end_flag == true)
+			break;
 		for (int j = mCol/(My_N/10); j <= (mCol+mWidth-1)/(My_N/10); j++)
 		{
 			if (end_flag == true)
